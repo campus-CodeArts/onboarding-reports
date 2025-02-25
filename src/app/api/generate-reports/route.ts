@@ -22,7 +22,7 @@ export async function POST(req) {
     }
 
     // Crear directorio temporal
-    const outputDir = path.join(process.cwd(), "public/reports");
+    const outputDir = path.join(process.cwd(), "public/data/reports");
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
     const timestamp = new Date().toISOString().replace(/[-T:.Z]/g, "");

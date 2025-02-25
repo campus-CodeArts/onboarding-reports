@@ -1,24 +1,55 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
-export default function middleware(req) {
-  if (process.env.HTTP_USER) {
-    const auth = req.headers.get("authorization");
+const ROLE_PROTECT_ENABLED = process.env.ROLE_PROTECT === "enabled" ? true: false;
+const HOME_PATH = '/';
+const PUBLIC_PATHS = process.env.PUBLIC_PATHS.split(',') || [HOME_PATH];
+const STUDENT_PATHS = ['/users', '/user', '/ranking', '/ranking/teams', '/api/ranking', '/api/ranking/:path*'];
+const USER_PATHS = ['/api/generate-reports'];
+const ADMIN_PATHS = ['/admin','/api/sync'];
 
-    // Usuario y contraseña en Base64 → user:password
-    const validAuth = "Basic " + Buffer.from(`${process.env.HTTP_USER}:${process.env.HTTP_PASSWORD}`).toString("base64");
-  
-    if (auth !== validAuth) {
-      return new Response("No autorizado", {
-        status: 401,
-        headers: { "WWW-Authenticate": 'Basic realm="Secure Area"' },
-      });
+export async function middleware(req: NextRequest) {
+    console.log(`middleware ${ROLE_PROTECT_ENABLED}:`, req.nextUrl.pathname);
+    const isHome = HOME_PATH === req.nextUrl.pathname;
+    if (ROLE_PROTECT_ENABLED && !isHome){
+        const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+        console.log("Path:", req.nextUrl.pathname);
+        console.log("Token:", token);
+    
+        // Determinar el rol del usuario
+        const userRole = token?.role ?? process.env.DEFAULT_ROLE;
+        console.log(userRole)
+    
+        if (userRole === 'admin' || ADMIN_PATHS.includes(req.nextUrl.pathname)) {
+            console.log('admin ->')
+            return NextResponse.next();
+        }
+    
+        if (userRole === 'anonymous' || PUBLIC_PATHS.includes(req.nextUrl.pathname)) {
+            console.log('anonymous ->')
+            return NextResponse.redirect(new URL('/', req.url));
+        }
+    
+        if (userRole === 'user' && ![...USER_PATHS, ...STUDENT_PATHS, ...PUBLIC_PATHS].includes(req.nextUrl.pathname)) {
+            console.log('user ->')
+            return NextResponse.redirect(new URL('/', req.url));
+        }
+    
+        if (userRole === 'student' && ![...STUDENT_PATHS, ...PUBLIC_PATHS].includes(req.nextUrl.pathname)) {
+            console.log('student ->')
+            return NextResponse.redirect(new URL('/', req.url));
+        }
+        console.log('nap')
     }
-  }
 
-  return NextResponse.next();
+    return NextResponse.next();
 }
 
 export const config = {
-  matcher: "/", // Protege toda la aplicación
+    matcher: [
+        '/users', '/user/:path*', '/user/', 
+        '/ranking', '/ranking/teams', 
+        '/api/ranking', '/api/ranking/:path*', 
+        '/api/generate-reports', '/admin/:path*'
+    ],
 };
-  

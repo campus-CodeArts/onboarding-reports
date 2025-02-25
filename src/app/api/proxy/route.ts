@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from '@/lib/authOptions';
 
 export async function GET(req: Request) {
+    const session = await getServerSession(authOptions);
+  
+    if (!session || session.role === 'anonymous') {
+      return Response.json({ error: "No autenticado o sin token" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const url = searchParams.get("url");
 

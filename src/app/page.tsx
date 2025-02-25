@@ -1,13 +1,12 @@
 
-/*import UsersTable from "@/components/UsersTable";*/
-import UsersBrowser from "@/components/UsersBrowser";
-
 export default function Home() {
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold">Dashboard de Actividad</h1>
-      <p className="mt-2">Selecciona un usuario para ver su actividad:</p>
-      <UsersBrowser></UsersBrowser>
-    </div>
-  );
+
+    return (
+        <div>
+            <section className="text-center py-16 bg-gray-100">
+                <h2 className="text-4xl font-bold mb-4">Bienvenido a CodeArts</h2>
+                <p className="text-lg mb-6">Navega por los distintos enlaces tras el login</p>
+            </section>
+        </div>
+    );
 }

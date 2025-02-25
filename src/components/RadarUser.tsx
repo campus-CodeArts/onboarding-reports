@@ -65,12 +65,9 @@ export default function RadarUser({ user, userType }) {
     };
 
     const loadData = async () => {
-      console.log("what?");
-
       const backlogs = await Promise.all(
         Array.from({ length: 6 }, (_, i) => fetchJson(`backlogs/${userType}/${i + 1}_backlog.json`))
       );
-      console.log(backlogs);
       
       const allTasks = await fetchJson(`tasks_${user}.json`);
       const backlogTasks = backlogs.flat();

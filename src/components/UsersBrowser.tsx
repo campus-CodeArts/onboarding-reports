@@ -5,8 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableCell, TableBody } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useSession } from 'next-auth/react';
+
+const defaultRole = process.env.DEFAULT_ROLE;
 
 export default function UserBrowser() {
+  const { data: session } = useSession();
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [search, setSearch] = useState("");
@@ -14,6 +18,7 @@ export default function UserBrowser() {
   const [loadingReports, setLoadingReports] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState("");
   const router = useRouter();
+  const [userRole, setUserRole] = useState(defaultRole);
 
   useEffect(() => {
     fetch("/data/users.json")
@@ -23,7 +28,10 @@ export default function UserBrowser() {
         setFilteredUsers(data);
       })
       .catch((error) => console.error("Error fetching users:", error));
-  }, []);
+      if (session?.role) {
+          setUserRole(session.role || defaultRole);
+      }
+  }, [session]);
 
   useEffect(() => {
     setFilteredUsers(
@@ -81,9 +89,10 @@ export default function UserBrowser() {
         )}
       </div>
 
+      {userRole === 'admin' && (
       <Button onClick={generateReports} disabled={loadingReports} className="mb-4">
         {loadingReports ? "Generando..." : "Generar Informes"}
-      </Button>
+      </Button>)}
 
       {downloadUrl && (
         <p>

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 import { parse } from "date-fns";
+import { ranking } from '@/lib/ranking';
 
 interface TeamData {
     name: string;
@@ -23,8 +24,7 @@ export async function GET(req, { params }) {
         console.log(`Agrupando por ${field}`);
 
         // Cargar datos desde `/api/ranking`
-        const rankingRes = await fetch(`${process.env.PUBLIC_URL}/api/ranking`);
-        const rankingData = await rankingRes.json();
+        const rankingData = await ranking();
 
         // Cargar datos de los equipos desde `teams.json`
         const teamsPath = path.join(process.cwd(), 'public/data/teams.json');
@@ -61,7 +61,7 @@ export async function GET(req, { params }) {
             groupedData[key].memberNames.push(user["githubUser"]);
         });
 
-        console.log(groupedData);
+        // console.log(groupedData);
 
         // Convertir a array y calcular media
         const result = Object.values(groupedData).map(group => ({
