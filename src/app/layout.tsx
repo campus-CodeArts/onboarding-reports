@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import SessionProvider from "@/components/SessionProvider";
 import Link from "next/link";
 import "./globals.css";
+import logo from '/public/logo.png';
+import Image from 'next/image';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +31,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-100 text-gray-900`}>
         {/* Header */}
         <header className="bg-white shadow-md py-4 px-6 flex justify-between items-center">
-          <Link href="/" className="text-xl font-bold text-blue-600">CodeArts Solutions</Link>
+          <Link href="/" className="flex items-center"> <Image src={logo} alt="Logo de CodeArts Solutions" width={150} height={40}/></Link>
           <Link href="/" className="text-xl font-bold text-blue-600">Home</Link>
           <Link href="/ranking/teams" className="text-xl font-bold text-blue-600">Teams</Link>
           <Link href="/ranking" className="text-xl font-bold text-blue-600">Ranking</Link>
