@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useSession } from 'next-auth/react';
 
 const defaultRole = process.env.DEFAULT_ROLE;
+const ROLE_PROTECT_ENABLED = process.env.ROLE_PROTECT === "enabled" ? true: false;
 
 export default function UserBrowser() {
   const { data: session } = useSession();
@@ -89,7 +90,7 @@ export default function UserBrowser() {
         )}
       </div>
 
-      {userRole === 'admin' && (
+      {(!ROLE_PROTECT_ENABLED || userRole === 'admin') && (
       <Button onClick={generateReports} disabled={loadingReports} className="mb-4">
         {loadingReports ? "Generando..." : "Generar Informes"}
       </Button>)}

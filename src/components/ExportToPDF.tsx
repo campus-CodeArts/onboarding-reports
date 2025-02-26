@@ -9,7 +9,7 @@ export default function ExportToPDF({ user }) {
 
     const options = {
       margin: 10,
-      filename: `perfil_${user}.pdf`,
+      filename: `${user}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2, logging: false, dpi: 192 },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },

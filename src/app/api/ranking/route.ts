@@ -6,6 +6,6 @@ export async function GET() {
     const enrichedUsers = await ranking();
     return NextResponse.json(enrichedUsers);
   } catch (error) {
-    return NextResponse.json({ error: "Error al calcular ranking" }, { status: 500 });
+    return NextResponse.json({ error: `Error al calcular ranking: ${error}` }, { status: 500 });
   }
 }
