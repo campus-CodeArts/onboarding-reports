@@ -44,8 +44,22 @@ Contenido para `.env.local`:
 
 ```
 PUBLIC_URL=http://localhost:3000
-#HTTP_USER=codearts
-HTTP_PASSWORD=codearts
+NEXTAUTH_SECRET=123456789
+NEXTAUTH_URL=http://localhost:3000
+
+# Google sheets (TODOS)
+GOOGLE_USERS_SHEET_ID=""
+GOOGLE_USERS_SHEET_RANGE=""
+
+# NEXT AUTH SSO
+ROLE_PROTECT=disabled
+PUBLIC_PATHS="/"
+DEFAULT_ROLE=anonymous
+AUTH_DEBUG=false
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+AUTH_GITHUB_ID=
+AUTH_GITHUB_SECRET=
 ```
 
 ## 📌 Notas adicionales

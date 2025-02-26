@@ -25,20 +25,26 @@ export const authOptions = {
       if (account) {
         token.accessToken = account.access_token;
         token.role = await getUserRole(token);
+        // console.log('JWT');
+        // console.log(account);
       }
+      // console.log('TOKEN');
+      // console.log(token);
       return token;
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken;
       session.role = await getUserRole(session);
-      //console.log(session);
+      // console.log('Session');
+      // console.log(session);
       return session;
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
 
-async function getUserRole(user) {
+async function getUserRole(container) {
+    const user = container && container.user ? container.user: container;
     if (!user) return process.env.DEFAULT_ROLE || 'anonymous';
 
     if (user.email && user.email === 'adiaz@codeartssolutions.com') return 'admin';

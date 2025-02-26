@@ -29,7 +29,10 @@ export async function POST(req) {
     const zipFileName = `informes_${timestamp}.zip`;
     const zipPath = path.join(outputDir, zipFileName);
 
-    const browser = await puppeteer.launch({ headless: true});
+    const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
     const page = await browser.newPage();
 
     for (const user of filteredUsers) {

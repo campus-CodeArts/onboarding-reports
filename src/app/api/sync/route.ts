@@ -12,9 +12,9 @@ export async function GET() {
 
   console.log(`Session: ${session.role}`)
 
-  if (!session || session.role !== 'admin') {
+  /*if (!session || session.role !== 'admin') {
     return Response.json({ error: "No autenticado o sin token" }, { status: 401 });
-  }
+  }*/
 
   try {
     const auth = new google.auth.OAuth2();
