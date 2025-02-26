@@ -2,18 +2,31 @@
 import { format, parse } from "date-fns";
 import { es } from "date-fns/locale";
 
-export default function AttendanceCalendar({ userData }) {
+export default function AttendanceCalendar({userData}) {
+  // Asegurarnos de que las fechas de inicio y fin existan
+  const fechaInicio = userData['Fecha de inicio']
+    ? parse(userData['Fecha de inicio'], "dd/MM/yyyy", new Date())
+    : new Date();
+  const fechaFin = userData['Fecha de Fin']
+    ? parse(userData['Fecha de Fin'], "dd/MM/yyyy", new Date())
+    : new Date();
 
-  // Ordenar fechas correctamente
-  const fechaInicio = parse(userData['Fecha de inicio'], "dd/MM/yyyy", new Date())
-  const fechaFin = parse(userData['Fecha de Fin'], "dd/MM/yyyy", new Date())
   const today = new Date();
+
+  // Si 'Asistencia' no está disponible, devolvemos un mensaje
+  if (!userData.Asistencia) {
+    return <p>No se encontraron datos de asistencia.</p>;
+  }
+
+  // Ordenar fechas correctamente y filtrar solo aquellas dentro del rango de fechas
   const sortedDates = Object.keys(userData.Asistencia)
     .map((date) => parse(date, "dd/MM/yyyy", new Date()))
-    .sort((a, b) => a.getTime() - b.getTime())
-    .filter((date) => (date.getTime() <= today.getTime() 
-      && date.getTime() >= fechaInicio.getTime()
-      && date.getTime() <= fechaFin.getTime()));
+    .sort((a, b) => a.getTime() - b.getTime()) // Ordenar por fecha
+    .filter((date) => 
+      date.getTime() <= today.getTime() &&
+      date.getTime() >= fechaInicio.getTime() &&
+      date.getTime() <= fechaFin.getTime()
+    );
 
   return (
     <div className="mt-6 p-4 border rounded-lg shadow-lg bg-white">
@@ -21,7 +34,7 @@ export default function AttendanceCalendar({ userData }) {
       <div className="grid grid-cols-7 gap-2 text-center">
         {sortedDates.map((date) => {
           const formattedDate = format(date, "dd/MM/yyyy", { locale: es });
-          const isPresent = userData.Asistencia[formattedDate];
+          const isPresent = userData.Asistencia[formattedDate]; // Verificar si está presente en esa fecha
 
           return (
             <div

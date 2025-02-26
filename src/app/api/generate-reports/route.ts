@@ -4,17 +4,25 @@ import path from "path";
 import archiver from "archiver";
 import puppeteer from "puppeteer";
 
-export async function POST(req) {
+interface User {
+  [key: string]: string | number | boolean | null;
+}
+
+export async function POST(req: Request): Promise<NextResponse> {
   try {
     const { filters } = await req.json();
 
-    // Leer lista de usuarios desde el JSON
-    const users = JSON.parse(fs.readFileSync("public/data/users.json", "utf8"));
+    // Leer lista de usuarios desde el JSON con tipado
+    const users: User[] = JSON.parse(await fs.promises.readFile("public/data/users.json", "utf8"));
+
 
     // Aplicar filtros
-    const filteredUsers = users.filter((user) =>
-      filters.every((filter) => Object.values(user).includes(filter))
-      // user["Usuario de Github"] === "juliakfsxxfer"
+    const filteredUsers = users.filter((user: User) =>
+      filters.every((filter: string) =>
+        Object.values(user)
+          .map(value => String(value)) // Convertimos todo a string
+          .includes(String(filter))
+      )
     );
 
     if (filteredUsers.length === 0) {
@@ -29,33 +37,36 @@ export async function POST(req) {
     const zipFileName = `informes_${timestamp}.zip`;
     const zipPath = path.join(outputDir, zipFileName);
 
-    const browser = await puppeteer.launch({ headless: true});
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
 
+    const baseUrl = process.env.PUBLIC_URL || "http://localhost:3000";
+
     for (const user of filteredUsers) {
-        try{
-            const url = `${process.env.PUBLIC_URL}/user/${user["Usuario de Github"]}/report`;
-            const tutor = user['Correo del tutor/a'].replace(">", "").replace("<", "");
-            if (!fs.existsSync(`${outputDir}/${tutor}`)) fs.mkdirSync(`${outputDir}/${tutor}`, { recursive: true });
-            const pdfPath = path.join(`${outputDir}/${tutor}`, `${user["Usuario de Github"]}.pdf`);
-      
-            await page.goto(url, { waitUntil: "networkidle2" });
-      
-            // Esperar a que la página haya cargado completamente
-            await page.waitForSelector(".user-summary", { timeout: 30000 });
-            await page.waitForSelector(".user-activity", { timeout: 30000 });¡
-            await page.waitForFunction(() => {
-                const fonts = document.fonts;
-                return fonts.status === "loaded";
-            });
-            await page.waitForSelector("style, link[rel='stylesheet']", { timeout: 30000 });
-            await page.waitForFunction(() => {
-                return Array.from(document.images).every(img => img.complete && img.naturalHeight !== 0);
-            }, { timeout: 1200000 });      
-            await page.pdf({ path: pdfPath, format: "A4", printBackground: true });
-        } catch (e) {
-            console.log(`Error con ${user["Usuario de Github"]}: ${e}`);
-        }
+      try {
+        const url = `${baseUrl}/user/${user["Usuario de Github"]}/report`;
+        const tutor = String(user["Correo del tutor/a"]).replace(/[<>]/g, ""); // Limpia caracteres no deseados
+
+        const tutorDir = path.join(outputDir, tutor);
+        if (!fs.existsSync(tutorDir)) fs.mkdirSync(tutorDir, { recursive: true });
+
+        const pdfPath = path.join(tutorDir, `${user["Usuario de Github"]}.pdf`);
+
+        await page.goto(url, { waitUntil: "networkidle2" });
+
+        // Esperar a que la página haya cargado completamente
+        await page.waitForSelector(".user-summary", { timeout: 30000 });
+        await page.waitForSelector(".user-activity", { timeout: 30000 });
+        await page.waitForFunction(() => document.fonts.status === "loaded");
+        await page.waitForSelector("style, link[rel='stylesheet']", { timeout: 30000 });
+        await page.waitForFunction(() =>
+          Array.from(document.images).every(img => img.complete && img.naturalHeight !== 0)
+        , { timeout: 120000 });
+
+        await page.pdf({ path: pdfPath, format: "A4", printBackground: true });
+      } catch (e) {
+        console.log(`Error con ${user["Usuario de Github"]}:`, e);
+      }
     }
 
     await browser.close();
@@ -65,8 +76,8 @@ export async function POST(req) {
     const archive = archiver("zip", { zlib: { level: 9 } });
 
     archive.pipe(output);
-    filteredUsers.forEach((user) => {
-      const tutor = user['Correo del tutor/a'].replace(">", "");
+    filteredUsers.forEach((user: User) => {
+      const tutor = String(user["Correo del tutor/a"]).replace(/[<>]/g, ""); // Limpia caracteres no deseados
       const filePath = path.join(outputDir, `${tutor}/${user["Usuario de Github"]}.pdf`);
       archive.file(filePath, { name: `${tutor}/${user["Usuario de Github"]}.pdf` });
     });

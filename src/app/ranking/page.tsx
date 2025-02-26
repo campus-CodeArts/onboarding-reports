@@ -3,11 +3,27 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export default function RankingPage() {
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [scoreFilter, setScoreFilter] = useState(100);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [users, setUsers] = useState<Array<{
+    githubUser: string;
+    fullName: string;
+    group: string;
+    city: string;
+    grade: string;
+    tutor: string;
+    totalScore: number;
+  }>>([]);
+  const [filteredUsers, setFilteredUsers] = useState<Array<{
+    githubUser: string;
+    fullName: string;
+    group: string;
+    city: string;
+    grade: string;
+    tutor: string;
+    totalScore: number;
+  }>>([]);
+  const [scoreFilter, setScoreFilter] = useState<number>(100);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchRanking = async () => {
@@ -20,16 +36,21 @@ export default function RankingPage() {
         setUsers(data);
         setFilteredUsers(data);
       } catch (err) {
-        setError(err.message);
+        // Verifica si el error tiene la propiedad `message` antes de asignarlo
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Error desconocido");
+        }
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchRanking();
   }, []);
+  
 
-  // Filtrar usuarios según el slider de puntuación
   useEffect(() => {
     setFilteredUsers(users.filter(user => user.totalScore <= scoreFilter));
   }, [scoreFilter, users]);
@@ -37,8 +58,7 @@ export default function RankingPage() {
   if (loading) return <p className="text-center text-gray-500">Cargando ranking...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
-  // Función para determinar el color de la fila según la puntuación
-  const getRowColor = (score) => {
+  const getRowColor = (score: number) => {
     if (score > 10) return "bg-yellow-400"; // 10+
     if (score >= 8) return "bg-green-400"; // 8-10
     if (score >= 5) return "bg-orange-300"; // 5-8
@@ -49,10 +69,9 @@ export default function RankingPage() {
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Ranking de Usuarios</h1>
 
-      {/* Slider para filtrar por puntuación */}
       <div className="mb-4">
         <label className="block text-lg font-semibold">
-          Filtrar por puntuación: {scoreFilter}
+          Filtrar por puntuación: {scoreFilter.toFixed(1)}
         </label>
         <input
           type="range"
