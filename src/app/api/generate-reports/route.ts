@@ -11,10 +11,11 @@ export async function POST(req) {
     // Leer lista de usuarios desde el JSON
     const users = JSON.parse(fs.readFileSync("public/data/users.json", "utf8"));
 
+    const USERS_CUSTOM = !!process.env.USERS_CUSTOM ? process.env.USERS_CUSTOM.split(',') : []
+
     // Aplicar filtros
     const filteredUsers = users.filter((user) =>
-      filters.every((filter) => Object.values(user).includes(filter))
-      // user["Usuario de Github"] === "juliakfsxxfer"
+      filters.every((filter) => Object.values(user).includes(filter)) &&  (USERS_CUSTOM.length === 0 || USERS_CUSTOM.includes(user["Usuario de Github"]))
     );
 
     if (filteredUsers.length === 0) {
@@ -31,9 +32,11 @@ export async function POST(req) {
 
     const browser = await puppeteer.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
+    page.setDefaultNavigationTimeout(1200000);
+    page.setDefaultTimeout(1200000);
 
     for (const user of filteredUsers) {
         try{
@@ -42,16 +45,16 @@ export async function POST(req) {
             if (!fs.existsSync(`${outputDir}/${tutor}`)) fs.mkdirSync(`${outputDir}/${tutor}`, { recursive: true });
             const pdfPath = path.join(`${outputDir}/${tutor}`, `${user["Usuario de Github"]}.pdf`);
       
-            await page.goto(url, { waitUntil: "networkidle2" });
+            await page.goto(url, { waitUntil: "load", timeout: 1200000 });
       
             // Esperar a que la página haya cargado completamente
-            await page.waitForSelector(".user-summary", { timeout: 30000 });
-            await page.waitForSelector(".user-activity", { timeout: 30000 });
+            await page.waitForSelector(".user-summary", { timeout: 1200000 });
+            await page.waitForSelector(".user-activity", { timeout: 1200000 });
             await page.waitForFunction(() => {
                 const fonts = document.fonts;
                 return fonts.status === "loaded";
             });
-            await page.waitForSelector("style, link[rel='stylesheet']", { timeout: 30000 });
+            await page.waitForSelector("style, link[rel='stylesheet']", { timeout: 1200000 });
             await page.waitForFunction(() => {
                 return Array.from(document.images).every(img => img.complete && img.naturalHeight !== 0);
             }, { timeout: 1200000 });      

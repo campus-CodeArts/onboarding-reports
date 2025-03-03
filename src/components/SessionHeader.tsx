@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from "next/navigation";
 
 const defaultRole = process.env.DEFAULT_ROLE;
 const ROLE_PROTECT_ENABLED = process.env.ROLE_PROTECT === "enabled" ? true: false;
@@ -11,6 +12,7 @@ const ROLE_PROTECT_ENABLED = process.env.ROLE_PROTECT === "enabled" ? true: fals
 export default function SessionHeader() {
     const { data: session } = useSession();
     const [userRole, setUserRole] = useState(defaultRole);
+    const pathname = usePathname();
 
     useEffect(() => {
         if (session?.role) {
@@ -18,6 +20,10 @@ export default function SessionHeader() {
             setUserRole(session.role);
         }
     }, [session]);
+
+    if (pathname.endsWith('report')) {
+        return (<></>);
+    }
 
     return (
         <header className="flex justify-between items-center p-4 bg-gray-900 text-white">

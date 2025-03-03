@@ -5,7 +5,7 @@ import Link from "next/link";
 export default function RankingPage() {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
-  const [scoreFilter, setScoreFilter] = useState(100);
+  const [scoreFilter, setScoreFilter] = useState(200);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -57,7 +57,7 @@ export default function RankingPage() {
         <input
           type="range"
           min="0"
-          max="100"
+          max="200"
           step="0.1"
           value={scoreFilter}
           onChange={(e) => setScoreFilter(parseFloat(e.target.value))}
